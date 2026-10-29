@@ -1,0 +1,15 @@
+{
+  "routes": [
+    { "path": "/", "title": "Dashboard" },
+    { "path": "/login", "title": "Connexion" },
+    { "path": "/library", "title": "Bibliothèque de cours" },
+    { "path": "/my-learning", "title": "Mon apprentissage" },
+    { "path": "/studio", "title": "Learning Studio" },
+    { "path": "/tutor", "title": "Tuteur IA" },
+    { "path": "/quizzes", "title": "QCM & examens" },
+    { "path": "/demo", "title": "Démonstration MVP" },
+    { "path": "/progress", "title": "Progression" },
+    { "path": "/saved", "title": "Ressources enregistrées" },
+    { "path": "/settings", "title": "Paramètres" }
+  ]
+}
