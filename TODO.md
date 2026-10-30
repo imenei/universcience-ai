@@ -106,5 +106,11 @@
 
 ## 15. Copie GitHub de la nouvelle version
 
-- [ ] Pousser la version actuelle du projet avec la landing page vers `https://github.com/imenei/universcience-ai`, branche `main`, en conservant l’historique existant et sans force push; remplacer les différences existantes conformément au choix explicite de l’utilisateur.
-- [ ] Ne pas pousser de fichiers `.env`, clés ou autres secrets; ne pas changer le dépôt canonique Manus et ne pas republier le site hébergé sans demande explicite.
+- [x] Pousser la version actuelle du projet avec la landing page vers `https://github.com/imenei/universcience-ai`, branche `main`, en conservant l’historique existant et sans force push; remplacer les différences existantes conformément au choix explicite de l’utilisateur.
+- [x] Ne pas pousser de fichiers `.env`, clés ou autres secrets; ne pas changer le dépôt canonique Manus et ne pas republier le site hébergé sans demande explicite.
+
+
+## 16. État de publication
+
+- La branche `main` du dépôt GitHub public a reçu la version synchronisée sans force push; aucun fichier de clés ni secret n’a été inclus.
+- La publication sur le domaine Manus est distincte; elle n’a pas été demandée et le site en production conserve sa version précédente.
