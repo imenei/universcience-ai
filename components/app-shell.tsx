@@ -28,6 +28,15 @@ type AppShellProps = {
   user: { id: string; email?: string; demo?: boolean } | null;
 };
 
+const demoHighlights: Record<string, { label: string; title: string; description: string }> = {
+  "/": { label: "APERÇU", title: "Votre parcours en un coup d’œil", description: "Cours indexés, activité et raccourcis pour commencer." },
+  "/library": { label: "SOURCES", title: "Explorer les documents indexés", description: "Chaque PDF devient une source vérifiable pour l’IA." },
+  "/tutor": { label: "TUTEUR IA", title: "Poser une question au cours", description: "Testez une réponse contextualisée avec citation de page." },
+  "/quizzes": { label: "QCM", title: "Transformer le cours en entraînement", description: "Générez un QCM grounded puis mesurez votre résultat." },
+  "/progress": { label: "PROGRESSION", title: "Voir ce qui mérite votre attention", description: "Les scores et concepts à revoir suivent vos tentatives." },
+  "/demo": { label: "VISITE GUIDÉE", title: "Voir un exemple complet", description: "Question, source, QCM et progression en quelques clics." },
+};
+
 export function AppShell({ pathname, children, onNavigate, language, onLanguageChange, user }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -161,6 +170,7 @@ export function AppShell({ pathname, children, onNavigate, language, onLanguageC
             {logoutError && <span className="logout-error" role="alert">{logoutError}</span>}
           </div>
         </header>
+        {user?.demo && <div className="demo-guide-strip"><div className="demo-guide-main"><span className="demo-guide-icon"><Sparkles size={15} /></span><div><span className="demo-guide-kicker">MODE DÉMO · {demoHighlights[pathname]?.label ?? "EXPLORATION"}</span><strong>{demoHighlights[pathname]?.title ?? "Explorez UniverScience AI"}</strong><span>{demoHighlights[pathname]?.description ?? "Découvrez le parcours d’apprentissage guidé."}</span></div></div><div className="demo-guide-links"><button className={pathname === "/demo" ? "active" : ""} onClick={() => go("/demo")}>Visite</button><button className={pathname === "/tutor" ? "active" : ""} onClick={() => go("/tutor")}>Tuteur</button><button className={pathname === "/quizzes" ? "active" : ""} onClick={() => go("/quizzes")}>QCM</button><button className={pathname === "/progress" ? "active" : ""} onClick={() => go("/progress")}>Progression</button></div></div>}
         <main className="content-area">{children}</main>
       </div>
     </div>
