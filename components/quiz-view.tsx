@@ -65,6 +65,7 @@ export function QuizView({ onNavigate }: { onNavigate: Navigate }) {
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [canRetry, setCanRetry] = useState(false);
 
   const selectedCourse = useMemo(() => courses.find((course) => course.id === courseId) ?? null, [courses, courseId]);
   const active = questions[current];
@@ -115,6 +116,7 @@ export function QuizView({ onNavigate }: { onNavigate: Navigate }) {
     setResult(null);
     setCorrections({});
     setError("");
+    setCanRetry(false);
   }
 
   async function generate() {
@@ -124,6 +126,7 @@ export function QuizView({ onNavigate }: { onNavigate: Navigate }) {
     }
     setLoading(true);
     setError("");
+    setCanRetry(false);
     resetAttempt();
     try {
       const response = await fetch("/api/quizzes/generate", {
@@ -137,14 +140,15 @@ export function QuizView({ onNavigate }: { onNavigate: Navigate }) {
         window.location.assign("/login");
         return;
       }
-      if (!response.ok) throw new Error(data.error || "La génération du QCM a échoué.");
+      if (!response.ok) throw new Error(data.error || "retry");
       if (!Array.isArray(data.questions) || data.questions.length === 0 || typeof data.quizId !== "string") {
         throw new Error("Le backend n’a pas renvoyé de QCM exploitable.");
       }
       setQuizId(data.quizId);
       setQuestions(data.questions);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "La génération du QCM a échoué.");
+    } catch {
+      setError("La génération n’a pas abouti. Réessayez.");
+      setCanRetry(true);
     } finally {
       setLoading(false);
     }
@@ -195,7 +199,7 @@ export function QuizView({ onNavigate }: { onNavigate: Navigate }) {
         {selectedCourse && <div className="quiz-selected-course"><CheckCircle2 size={16} /><span>Cours sélectionné : <strong>{selectedCourse.title}</strong> · {selectedCourse.indexedDocumentCount} document(s) indexé(s)</span></div>}
         <label>Sujet ou chapitre<input value={topic} onChange={(event) => setTopic(event.target.value)} placeholder="Ex. mécanismes de transport" /></label>
         <div className="generator-fields"><label>Questions<select value={count} onChange={(event) => setCount(event.target.value)}><option value="3">3 questions</option><option value="5">5 questions</option><option value="10">10 questions</option></select></label><label>Difficulté<select value={difficulty} onChange={(event) => setDifficulty(event.target.value)}><option value="easy">Facile</option><option value="medium">Intermédiaire</option><option value="hard">Difficile</option></select></label></div>
-        {error && <div className="quiz-error" role="alert">{error}</div>}
+        {error && <div className="quiz-error" role="alert"><span>{error}</span>{canRetry && <Button variant="secondary" onClick={() => void generate()} disabled={loading}><RefreshCw size={14} /> Réessayer</Button>}</div>}
         <Button onClick={() => void generate()} disabled={loading || coursesLoading || !selectedCourse || selectedCourse.indexedDocumentCount < 1}>{loading ? <><LoaderCircle size={16} className="spin" /> Génération en cours…</> : <>Générer le QCM <Sparkles size={16} /></>}</Button>
         <p className="quiz-generator-note"><LockKeyhole size={14} /> Seuls les passages autorisés et indexés du cours choisi sont utilisés.</p>
       </section>

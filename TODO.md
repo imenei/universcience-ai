@@ -51,13 +51,12 @@
 - [x] Les clés sont uniquement côté serveur et `.env.example` ne contient aucune valeur secrète.
 - [x] Configurer de façon sécurisée `RAG_DATABASE_URL`, les variables `AI_*` et les modèles fournisseur; vérifier l’accès PostgreSQL, l’extension pgvector, les tables `documents` / `document_chunks` / `quiz_sets` ainsi que la présence des modèles dans le catalogue IA.
 - [ ] Tester de bout en bout avec un compte étudiant réel et des PDF autorisés, y compris l’indexation par embeddings et les réponses RAG citées.
-- [ ] Fournir `FIKRA_SESSION_SECRET` stable d’au moins 32 caractères dans l’environnement serveur pour que le bouton de démonstration puisse signer ses sessions; sans la clé, l’API renvoie explicitement 503.
-- [ ] Remplacer la session de démonstration Preview par une authentification institutionnelle vérifiée et appliquer les politiques d’accès de production lorsque les comptes étudiants seront disponibles.
+- [x] Supprimer le mode démonstration et exiger une authentification Supabase réelle pour accéder à l’application.
 
 ## 8. Validation technique
 
 - [x] Installer les dépendances, exécuter les diagnostics TypeScript et le build de production après les corrections finales; redémarrer le Preview après validation.
-- [x] Utiliser des pages explicites, déclarer `/demo` dans Next.js et le manifeste, puis vérifier les routes et le manifeste en HTTP.
+- [x] Utiliser des pages explicites, retirer la route demo de Next.js et du manifeste, puis vérifier les routes et le manifeste en HTTP.
 - [x] Enregistrer un checkpoint canonique et publier le code à la demande explicite de l’utilisateur; la publication automatique demeure désactivée. Les changements ultérieurs des secrets doivent être republiés explicitement.
 - [x] Corriger `SUPABASE_URL` pour supprimer les espaces de bord avant de former les endpoints; TypeScript/build réussis, Supabase Settings HTTP 200, login fictif rejeté proprement en HTTP 401 (sans compte utilisateur réel).
 
@@ -68,10 +67,9 @@
 - [x] Générer ou récupérer les questions selon le cours choisi, ne jamais exposer les bonnes réponses avant soumission, envoyer les réponses au backend pour correction et afficher le score, les explications et les corrections après enregistrement côté serveur.
 - [x] Présenter les états de chargement, de cours absent, de configuration manquante et d’erreur sans simuler une génération ou une réussite.
 
-## 10. Session, protection de l’espace et démonstration
+## 10. Session et protection de l’espace
 
-- [x] Ajouter sous le formulaire de connexion un bouton « Voir la démonstration » qui crée explicitement une session serveur puis ouvre `/demo`; si la clé requise manque, afficher l’erreur de configuration renvoyée par l’API.
-- [x] Créer/valider côté serveur une session de démonstration signée, propre à chaque visite et expirant après huit heures, limitée à l’environnement non-production; une consultation anonyme de l’état de session ne crée pas de session et la démo est désactivée en production.
+- [x] Retirer le bouton, les écrans et les endpoints de démonstration; aucune session temporaire n’est créée côté serveur.
 - [x] Vérifier la session avant d’afficher les routes privées, continuer de vérifier l’identité et les autorisations sur les API, et rediriger vers la connexion si la session est absente ou expirée.
 - [x] Afficher une action de déconnexion dédiée et visible; elle efface les cookies d’application/Supabase puis ramène l’utilisateur vers la connexion.
 
@@ -89,3 +87,24 @@
 - [ ] Le script `pnpm lint` doit être configuré sans assistant interactif; sa commande actuelle a ouvert un assistant ESLint et s’est arrêtée, sans modifier les fichiers.
 - [x] Configurer par formulaire sécurisé les valeurs Supabase Auth, PostgreSQL/pgvector et fournisseur IA; Supabase Auth répond HTTP 200, les modèles IA configurés sont présents, et PostgreSQL accepte la connexion avec pgvector et les tables RAG attendues.
 - [ ] Vérifier un vrai login étudiant puis un parcours RAG/QCM de bout en bout avec un cours et des documents autorisés; aucune donnée utilisateur ni PDF autorisé n’a été fourni pour ce test.
+
+## 13. Redirection après confirmation d’inscription
+
+- [ ] Après confirmation de l’email d’inscription, rediriger vers `https://universci-7mdpctrg.manus.space/login?confirmed=1`, jamais vers `http://localhost:3000` ou un hôte interne; la page de connexion affiche la confirmation et retire les jetons du fragment de l’URL.
+- [x] Utiliser une redirection HTTPS fixe/fiable en production et préserver le comportement localhost uniquement en développement; le test de la fonction d’origine confirme l’URL publique en production et localhost en développement.
+- [ ] Dans Supabase Auth → URL Configuration, vérifier/mettre `https://universci-7mdpctrg.manus.space` comme Site URL et autoriser uniquement `https://universci-7mdpctrg.manus.space/*` dans Redirect URLs; le dashboard demande une connexion qui n’est pas disponible dans le navigateur Sandbox.
+- [x] TypeScript et build réussis; l’origine produit exactement `/login?confirmed=1`; sur le site publié, cette page affiche la confirmation puis nettoie son URL. Checkpoint `6e8ad0b22d619169836e16b4f755d8f58f70352b` publié. Aucun jeton partagé n’a été réutilisé ni journalisé.
+
+
+## 14. Landing page publique et nouveau parcours
+
+- [x] La route `/` présente une page d’accueil publique en français avec du contenu réellement présent dans le HTML initial, une proposition de valeur pour les étudiants en pharmacie, médecine et sciences, et une présentation véridique du tuteur IA basé sur les sources de cours, des QCM et du suivi de progression.
+- [x] La page d’accueil comporte des liens utilisables vers la connexion et la création de compte; le lien de création ouvre le mode inscription, et une connexion ou inscription réussie conduit au dashboard privé sur `/dashboard`.
+- [x] Le dashboard, la bibliothèque, le tuteur, les QCM, la progression, les réglages et la déconnexion restent accessibles selon la session authentifiée; le logo et l’entrée Dashboard de la navigation renvoient à `/dashboard`, pas à la page marketing.
+- [x] La page s’adapte aux écrans mobiles, reste utilisable au clavier, conserve un contraste lisible et respecte `prefers-reduced-motion`.
+- [x] La page publique utilise les métadonnées title, description, canonical et partage social avec le vrai domaine public; l’accueil est indexable, tandis que la connexion et les pages privées ne le sont pas; le sitemap ne propose pas les pages privées et le manifeste de routes comprend `/dashboard`.
+
+## 15. Copie GitHub de la nouvelle version
+
+- [ ] Pousser la version actuelle du projet avec la landing page vers `https://github.com/imenei/universcience-ai`, branche `main`, en conservant l’historique existant et sans force push; remplacer les différences existantes conformément au choix explicite de l’utilisateur.
+- [ ] Ne pas pousser de fichiers `.env`, clés ou autres secrets; ne pas changer le dépôt canonique Manus et ne pas republier le site hébergé sans demande explicite.

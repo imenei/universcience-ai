@@ -1,22 +1,10 @@
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
-
 export const SESSION_COOKIE = "fikra_session";
 const ACCESS_COOKIE = "fikra_supabase_access";
 const REFRESH_COOKIE = "fikra_supabase_refresh";
-const DEMO_USER_PREFIX = "demo-";
 const SESSION_TTL_SECONDS = 60 * 60 * 8;
+const PRODUCTION_APP_ORIGIN = "https://universci-skjh9jhy.manus.space";
 
 type SupabaseUser = { id: string; email?: string };
-
-function secret() {
-  const value = process.env.FIKRA_SESSION_SECRET;
-  if (!value || value.trim().length < 32) throw new Error("FIKRA_SESSION_SECRET doit contenir au moins 32 caractères.");
-  return value;
-}
-
-function sign(value: string) {
-  return createHmac("sha256", secret()).update(value).digest("base64url");
-}
 
 function supabaseConfig() {
   return { url: (process.env.SUPABASE_URL || "").trim().replace(/\/+$/, ""), anonKey: process.env.SUPABASE_ANON_KEY || "" };
@@ -45,36 +33,8 @@ export async function getSupabaseUser(request: Request): Promise<SupabaseUser | 
 
 export async function getCurrentUserId(request: Request) {
   const user = await getSupabaseUser(request);
-  if (user) return user.id;
-  return getCurrentDemoUserId(request);
+  return user?.id ?? null;
 }
-
-export function createSessionToken(userId: string) {
-  if (!isDemoUserId(userId)) throw new Error("Seule l’identité de démonstration peut utiliser cette session.");
-  const payload = `${userId}.${Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS}`;
-  return `${payload}.${sign(payload)}`;
-}
-
-export function getCurrentDemoUserId(request: Request) {
-  if (!demoSessionEnabled()) return null;
-  try {
-    const token = decodeURIComponent(cookieValue(request, SESSION_COOKIE));
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const [userId, expiration, signature] = parts;
-    const expiresAt = Number(expiration);
-    if (!isDemoUserId(userId) || !Number.isSafeInteger(expiresAt) || expiresAt <= Math.floor(Date.now() / 1000) || !signature) return null;
-    const payload = `${userId}.${expiresAt}`;
-    const expected = Buffer.from(sign(payload));
-    const actual = Buffer.from(signature);
-    return actual.length === expected.length && timingSafeEqual(actual, expected) ? userId : null;
-  } catch { return null; }
-}
-
-function isDemoUserId(userId: string) { return /^demo-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId); }
-export function demoUserId() { return `${DEMO_USER_PREFIX}${randomUUID()}`; }
-export function demoSessionEnabled() { return process.env.ALLOW_DEMO_SESSION === "true"; }
-export function sessionSecretConfigured() { return Boolean(process.env.FIKRA_SESSION_SECRET?.trim() && process.env.FIKRA_SESSION_SECRET.trim().length >= 32); }
 
 export function sessionCookieOptions(maxAge = SESSION_TTL_SECONDS) {
   const secure = process.env.FIKRA_COOKIE_SECURE !== "false";
@@ -83,3 +43,27 @@ export function sessionCookieOptions(maxAge = SESSION_TTL_SECONDS) {
 
 export const supabaseCookieNames = { access: ACCESS_COOKIE, refresh: REFRESH_COOKIE };
 export function supabaseConfigForServer() { return supabaseConfig(); }
+
+function safeHttpsOrigin(value: string | undefined) {
+  if (!value?.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.hostname === "localhost" || url.hostname === "127.0.0.1") return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+export function publicAppOrigin(request: Request) {
+  const configured = safeHttpsOrigin(process.env.PUBLIC_APP_URL);
+  if (configured) return configured;
+  if (process.env.NODE_ENV === "production") return PRODUCTION_APP_ORIGIN;
+
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("host")?.trim();
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const forwardedOrigin = host && forwardedProto ? safeHttpsOrigin(`${forwardedProto}://${host}`) : null;
+  if (forwardedOrigin) return forwardedOrigin;
+  return new URL(request.url).origin;
+}

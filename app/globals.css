@@ -215,7 +215,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .quiz-generator-card input, .quiz-generator-card select { border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; background: #fff; color: var(--ink); font: inherit; font-weight: 500; }
 .generator-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .quiz-generator-note, .quiz-bottom-note { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
-.quiz-error { border: 1px solid #f1b8b8; background: #fff5f5; color: #a33a3a; border-radius: 10px; padding: 12px 14px; font-size: 13px; }
+.quiz-error { border: 1px solid #f1b8b8; background: #fff5f5; color: #a33a3a; border-radius: 10px; padding: 12px 14px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .quiz-result-banner { margin-top: 18px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .quiz-result-banner strong { display: block; margin: 5px 0; font-size: 24px; }
 .quiz-result-banner p { margin: 0; color: var(--muted); font-size: 13px; }

@@ -71,7 +71,7 @@ export async function generateGroundedAnswer(question: string, context: string, 
         ...history.slice(-6).map((item) => ({ role: item.role === "assistant" ? "model" : "user", parts: [{ text: item.content }] })),
         { role: "user", parts: [{ text: `<course_context>\n${context}\n</course_context>\n\nQuestion: ${question}` }] },
       ],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 768, thinkingConfig: { thinkingBudget: 0 } },
+      generationConfig: { temperature: 0.2, maxOutputTokens: 768 },
     });
     const answer = payload?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("");
     if (typeof answer !== "string" || !answer.trim()) throw new ProviderRequestError("Réponse Gemini vide.");
@@ -106,7 +106,7 @@ export async function generateQuizQuestions(params: { context: string; count: nu
   const userContent = `<course_context>\n${params.context}\n</course_context>\nGénère le QCM maintenant.`;
   let raw: unknown;
   if (isGemini()) {
-    const payload = await geminiRequest(ragConfig.chatModel || "", "generateContent", { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: "user", parts: [{ text: userContent }] }], generationConfig: { temperature: 0.25, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 }, responseMimeType: "application/json" } });
+    const payload = await geminiRequest(ragConfig.chatModel || "", "generateContent", { systemInstruction: { parts: [{ text: system }] }, contents: [{ role: "user", parts: [{ text: userContent }] }], generationConfig: { temperature: 0.25, maxOutputTokens: 4096, responseMimeType: "application/json" } });
     raw = payload?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("");
   } else {
     const payload = await openAiRequest("/chat/completions", { model: ragConfig.chatModel, temperature: 0.25, max_tokens: 4096, response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, { role: "user", content: userContent }] });

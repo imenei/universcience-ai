@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sessionCookieOptions, supabaseConfigForServer, supabaseCookieNames } from "@/lib/server-auth";
+import { publicAppOrigin, sessionCookieOptions, supabaseConfigForServer, supabaseCookieNames } from "@/lib/server-auth";
 
 export const runtime = "nodejs";
 
@@ -13,7 +13,9 @@ export async function POST(request: Request) {
   if (!email || !password) return NextResponse.json({ error: "L’adresse email et le mot de passe sont requis." }, { status: 400 });
   if (password.length < 8) return NextResponse.json({ error: "Le mot de passe doit contenir au moins 8 caractères." }, { status: 400 });
 
-  const response = await fetch(`${url}/auth/v1/signup`, {
+  const signupUrl = new URL(`${url}/auth/v1/signup`);
+  signupUrl.searchParams.set("redirect_to", new URL("/login?confirmed=1", publicAppOrigin(request)).toString());
+  const response = await fetch(signupUrl.toString(), {
     method: "POST",
     headers: { apikey: anonKey, "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),

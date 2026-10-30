@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://universci-skjh9jhy.manus.space/sitemap.xml

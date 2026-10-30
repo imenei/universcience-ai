@@ -4,13 +4,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { LoaderCircle } from "lucide-react";
 import { AppShell, type Language } from "@/components/app-shell";
-import { DashboardView, DemoMvpView, GenericView, LibraryView, StudioView, TutorView } from "@/components/views";
+import { DashboardView, GenericView, LibraryView, StudioView, TutorView } from "@/components/views";
 import { MyLearningView } from "@/components/my-learning-view";
 import { QuizView } from "@/components/quiz-view";
 import { ProgressView } from "@/components/progress-view";
 import { Archive, Settings } from "lucide-react";
 
-type SessionUser = { id: string; email?: string; demo?: boolean };
+type SessionUser = { id: string; email?: string };
 
 export function FikraApp() {
   const pathname = usePathname() || "/";
@@ -27,7 +27,7 @@ export function FikraApp() {
       .then(({ response, data }) => {
         if (!active) return;
         if (response.ok && data.authenticated && data.user?.id) {
-          setSessionUser({ ...data.user, demo: Boolean(data.demo) });
+          setSessionUser(data.user);
           setSessionState("authenticated");
           return;
         }
@@ -50,13 +50,12 @@ export function FikraApp() {
   }
 
   let view: ReactNode;
-  if (pathname === "/" || pathname === "") view = <DashboardView onNavigate={onNavigate} user={sessionUser} />;
+  if (pathname === "/dashboard" || pathname === "/" || pathname === "") view = <DashboardView onNavigate={onNavigate} user={sessionUser} />;
   else if (pathname === "/library") view = <LibraryView onNavigate={onNavigate} />;
   else if (pathname === "/my-learning") view = <MyLearningView onNavigate={onNavigate} />;
   else if (pathname === "/studio") view = <StudioView onNavigate={onNavigate} />;
   else if (pathname === "/tutor") view = <TutorView />;
   else if (pathname === "/quizzes") view = <QuizView onNavigate={onNavigate} />;
-  else if (pathname === "/demo") view = <DemoMvpView onNavigate={onNavigate} />;
   else if (pathname === "/progress") view = <ProgressView onNavigate={onNavigate} />;
   else if (pathname === "/saved") view = <GenericView title="Ressources enregistrées" eyebrow="Espace personnel" description="Vos documents, résumés et explications sauvegardés pour y revenir au bon moment." icon={Archive} />;
   else if (pathname === "/settings") view = <GenericView title="Paramètres" eyebrow="Espace personnel" description="Gérez votre langue, vos préférences de révision et les sources utilisées par votre espace d’étude." icon={Settings} />;

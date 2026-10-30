@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, BookOpen, LoaderCircle, ShieldCheck, UserPlus } from "lucide-react";
 
 type AuthMode = "login" | "signup";
@@ -13,7 +13,16 @@ export function AuthView() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("confirmed") === "1") {
+      setNotice("Adresse confirmée. Vous pouvez maintenant vous connecter.");
+      window.history.replaceState({}, "", "/login");
+    } else if (params.get("mode") === "signup") {
+      setMode("signup");
+    }
+  }, []);
 
   function switchMode(nextMode: AuthMode) {
     setMode(nextMode);
@@ -42,22 +51,9 @@ export function AuthView() {
         setConfirmPassword("");
         return;
       }
-      window.location.assign("/");
+      window.location.assign("/dashboard");
     } catch { setError("Le service d’authentification est momentanément indisponible."); }
     finally { setLoading(false); }
-  }
-
-  async function enterDemo() {
-    setError("");
-    setNotice("");
-    setDemoLoading(true);
-    try {
-      const response = await fetch("/api/session", { method: "POST", credentials: "include", cache: "no-store" });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.demo) { setError(data.error || "La démonstration n’est pas disponible dans cet environnement."); return; }
-      window.location.assign("/demo");
-    } catch { setError("Le service de démonstration est momentanément indisponible."); }
-    finally { setDemoLoading(false); }
   }
 
   const isSignup = mode === "signup";
@@ -77,11 +73,8 @@ export function AuthView() {
       {isSignup && <label>Confirmer le mot de passe<input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Répétez votre mot de passe" autoComplete="new-password" minLength={8} required /></label>}
       {error && <div className="auth-error" role="alert">{error}</div>}
       {notice && <div className="auth-notice" role="status">{notice}</div>}
-      <button className="button button-primary auth-submit" type="submit" disabled={loading || demoLoading}>{loading ? <LoaderCircle size={16} className="spin" /> : <ShieldCheck size={16} />} {loading ? (isSignup ? "Création…" : "Connexion…") : (isSignup ? "Créer mon compte" : "Se connecter")}<ArrowRight size={15} /></button>
+      <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? <LoaderCircle size={16} className="spin" /> : <ShieldCheck size={16} />} {loading ? (isSignup ? "Création…" : "Connexion…") : (isSignup ? "Créer mon compte" : "Se connecter")}<ArrowRight size={15} /></button>
     </form>
-    <div className="auth-divider"><span>ou</span></div>
-    <button className="button button-secondary auth-demo" type="button" onClick={() => void enterDemo()} disabled={loading || demoLoading}>{demoLoading ? <LoaderCircle size={16} className="spin" /> : <BookOpen size={16} />} {demoLoading ? "Ouverture de la démonstration…" : "Voir la démonstration"}</button>
-    <p className="auth-demo-note">Session temporaire · aucune donnée institutionnelle requise pour la démonstration</p>
-    <p className="auth-note">La connexion et la création de compte utilisent Supabase Auth. La démonstration crée une session temporaire séparée, sans compte institutionnel.</p>
+    <p className="auth-note">La connexion et la création de compte utilisent Supabase Auth. Votre espace est accessible après confirmation de votre adresse email.</p>
   </div></main>;
 }

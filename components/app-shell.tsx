@@ -25,16 +25,7 @@ type AppShellProps = {
   onNavigate: (href: string) => void;
   language: Language;
   onLanguageChange: (language: Language) => void;
-  user: { id: string; email?: string; demo?: boolean } | null;
-};
-
-const demoHighlights: Record<string, { label: string; title: string; description: string }> = {
-  "/": { label: "APERÇU", title: "Votre parcours en un coup d’œil", description: "Cours indexés, activité et raccourcis pour commencer." },
-  "/library": { label: "SOURCES", title: "Explorer les documents indexés", description: "Chaque PDF devient une source vérifiable pour l’IA." },
-  "/tutor": { label: "TUTEUR IA", title: "Poser une question au cours", description: "Testez une réponse contextualisée avec citation de page." },
-  "/quizzes": { label: "QCM", title: "Transformer le cours en entraînement", description: "Générez un QCM grounded puis mesurez votre résultat." },
-  "/progress": { label: "PROGRESSION", title: "Voir ce qui mérite votre attention", description: "Les scores et concepts à revoir suivent vos tentatives." },
-  "/demo": { label: "VISITE GUIDÉE", title: "Voir un exemple complet", description: "Question, source, QCM et progression en quelques clics." },
+  user: { id: string; email?: string } | null;
 };
 
 export function AppShell({ pathname, children, onNavigate, language, onLanguageChange, user }: AppShellProps) {
@@ -43,11 +34,11 @@ export function AppShell({ pathname, children, onNavigate, language, onLanguageC
   const [searchOpen, setSearchOpen] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [logoutError, setLogoutError] = useState("");
-  const userLabel = user?.demo ? "Mode démo" : user?.email?.split("@")[0] || "Étudiant";
-  const initials = user?.demo ? "DÉ" : user?.email?.slice(0, 2).toUpperCase() || "ET";
+  const userLabel = user?.email?.split("@")[0] || "Étudiant";
+  const initials = user?.email?.slice(0, 2).toUpperCase() || "ET";
 
   const activeItem = navItems.find((item) => item.href === pathname) ?? navItems[0];
-  const breadcrumb = pathname === "/" ? ["Espace étudiant"] : ["Espace étudiant", activeItem.label];
+  const breadcrumb = pathname === "/" || pathname === "/dashboard" ? ["Espace étudiant"] : ["Espace étudiant", activeItem.label];
 
   const go = (href: string) => {
     setMobileOpen(false);
@@ -71,7 +62,7 @@ export function AppShell({ pathname, children, onNavigate, language, onLanguageC
     <div className="app-frame">
       <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${mobileOpen ? "sidebar-mobile-open" : ""}`}>
         <div className="brand-lockup">
-          <button className="brand-mark" aria-label="Retour au dashboard" onClick={() => go("/")}>
+          <button className="brand-mark" aria-label="Retour au dashboard" onClick={() => go("/dashboard")}>
             <span className="brand-mark-page" />
             <span className="brand-mark-spark">✦</span>
           </button>
@@ -94,7 +85,7 @@ export function AppShell({ pathname, children, onNavigate, language, onLanguageC
           <div className="nav-section-label">Apprendre</div>
           {navItems.slice(0, 6).map((item) => {
             const Icon = item.icon;
-            const active = item.href === pathname || (pathname === "/" && item.href === "/");
+            const active = item.href === pathname;
             return (
               <button key={item.href} className={`nav-item ${active ? "nav-item-active" : ""}`} onClick={() => go(item.href)} title={collapsed ? item.label : undefined}>
                 <Icon size={18} strokeWidth={active ? 2.1 : 1.8} />
@@ -123,7 +114,7 @@ export function AppShell({ pathname, children, onNavigate, language, onLanguageC
             <div>
               <strong>Besoin de comprendre ?</strong>
               <p>Posez une question à partir de votre cours.</p>
-              <button onClick={() => go("/demo")}>Ouvrir la démo MVP <ChevronRight size={14} /></button>
+              <button onClick={() => go("/tutor")}>Poser une question au tuteur <ChevronRight size={14} /></button>
             </div>
           </div>
         )}
@@ -140,7 +131,7 @@ export function AppShell({ pathname, children, onNavigate, language, onLanguageC
         <header className="topbar">
           <div className="mobile-topbar-left">
             <button className="icon-button mobile-menu-trigger" aria-label="Ouvrir le menu" onClick={() => setMobileOpen(true)}><Menu size={20} /></button>
-            <button className="mobile-brand" onClick={() => go("/")}><span className="brand-mark mini"><span className="brand-mark-page" /><span className="brand-mark-spark">✦</span></span>UniverScience AI<span>.</span></button>
+            <button className="mobile-brand" onClick={() => go("/dashboard")}><span className="brand-mark mini"><span className="brand-mark-page" /><span className="brand-mark-spark">✦</span></span>UniverScience AI<span>.</span></button>
           </div>
           <div className="breadcrumbs" aria-label="Fil d’Ariane">
             {breadcrumb.map((crumb, index) => <span key={crumb} className={index === breadcrumb.length - 1 ? "breadcrumb-current" : ""}>{index > 0 && <ChevronRight size={13} />}{crumb}</span>)}
@@ -170,7 +161,6 @@ export function AppShell({ pathname, children, onNavigate, language, onLanguageC
             {logoutError && <span className="logout-error" role="alert">{logoutError}</span>}
           </div>
         </header>
-        {user?.demo && <div className="demo-guide-strip"><div className="demo-guide-main"><span className="demo-guide-icon"><Sparkles size={15} /></span><div><span className="demo-guide-kicker">MODE DÉMO · {demoHighlights[pathname]?.label ?? "EXPLORATION"}</span><strong>{demoHighlights[pathname]?.title ?? "Explorez UniverScience AI"}</strong><span>{demoHighlights[pathname]?.description ?? "Découvrez le parcours d’apprentissage guidé."}</span></div></div><div className="demo-guide-links"><button className={pathname === "/demo" ? "active" : ""} onClick={() => go("/demo")}>Visite</button><button className={pathname === "/tutor" ? "active" : ""} onClick={() => go("/tutor")}>Tuteur</button><button className={pathname === "/quizzes" ? "active" : ""} onClick={() => go("/quizzes")}>QCM</button><button className={pathname === "/progress" ? "active" : ""} onClick={() => go("/progress")}>Progression</button></div></div>}
         <main className="content-area">{children}</main>
       </div>
     </div>
