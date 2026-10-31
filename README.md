@@ -2,8 +2,8 @@
 
 # UniverScience AI — Learning Studio
 
-**An AI-powered study platform for pharmacy and medical students.**
-Turn authorized course PDFs into a guided revision path: grounded tutoring, generated quizzes, and real progress tracking.
+**The next generation of university learning.**
+An AI learning companion for university science students, built around their actual course: grounded tutoring, generated quizzes, and real progress tracking. Starting with pharmacy and medicine, designed to scale to all scientific fields.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
@@ -22,6 +22,7 @@ Turn authorized course PDFs into a guided revision path: grounded tutoring, gene
 - [Overview](#overview)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
+- [Roadmap](#roadmap)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [Security](#security)
@@ -31,7 +32,7 @@ Turn authorized course PDFs into a guided revision path: grounded tutoring, gene
 
 ## Overview
 
-UniverScience AI is a university learning interface built for **pharmacy and medicine students**. Instead of a generic chatbot, it answers questions **only from the course documents a student is authorized to access**, and every answer comes with verifiable citations (document and page).
+UniverScience AI is a university learning interface for **science students**, launching with **pharmacy and medicine** and designed to expand to other scientific and technical fields. Instead of a generic chatbot, it answers questions **only from the course documents a student is authorized to access**, and every answer comes with verifiable citations (document and page).
 
 The platform is deliberately honest: if the database or the AI provider is not configured, the interface shows an explicit "missing configuration" state. It never fabricates answers, citations, scores, or progress to simulate a working RAG system.
 
@@ -64,6 +65,16 @@ The platform is deliberately honest: if the database or the AI provider is not c
 2. **Retrieval**: vector search is filtered by `document_access`, so a user can only retrieve passages they are allowed to see.
 3. **Generation**: the model answers from the retrieved context only; citations are validated before being returned.
 4. **Quizzes**: questions are generated from authorized RAG context, stored without answers, and scored on the server.
+
+## Roadmap
+
+UniverScience AI is an MVP. The features above are implemented; the following are planned and **not yet available**:
+
+- [ ] AI-generated video explanations from course material
+- [ ] Professor loop: unanswered questions are grouped and forwarded to professors
+- [ ] Reusable professor answers saved for future cohorts
+- [ ] Student usability tests and professor content review
+- [ ] Expansion to all medical universities, then to all scientific fields
 
 ## Getting Started
 
@@ -146,4 +157,4 @@ db/schema.sql     documents, document_access, document_chunks, ingestion_jobs,
 
 ## Responsible Use
 
-Only import course material you are authorized to use. UniverScience AI is a revision aid: it does not replace teachers, official course materials, or clinical judgment.
+Only import course material you are authorized to use. UniverScience AI is a revision aid: it does not replace teachers or official course materials, and it is not a substitute for clinical judgment.
